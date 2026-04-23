@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WA RTA Calculator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #0a0a0a; color: #e5e5e5; padding: 2rem 1.5rem; min-height: 100vh; }
+    .container { max-width: 680px; margin: 0 auto; }
+    h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.03em; background: linear-gradient(135deg, #fff 0%, #a0a0a0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #555; margin: 0.25rem 0 2rem; font-size: 0.85rem; font-weight: 400; }
+    .card { background: #141414; border-radius: 16px; padding: 1.5rem; margin-bottom: 0.75rem; border: 1px solid #1e1e1e; transition: border-color 0.2s; }
+    .card:hover { border-color: #2a2a2a; }
+    .card h2 { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #555; margin-bottom: 1.25rem; }
+    .vehicle-entry { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.75rem; align-items: end; margin-bottom: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid #1e1e1e; }
+    .vehicle-entry:last-of-type { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    label { display: block; font-size: 0.7rem; font-weight: 500; color: #555; margin-bottom: 0.35rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    input { width: 100%; padding: 0.6rem 0.75rem; border: 1px solid #222; border-radius: 10px; font-size: 0.9rem; font-family: inherit; background: #0e0e0e; color: #e5e5e5; transition: border-color 0.2s, box-shadow 0.2s; }
+    input::placeholder { color: #333; }
+    input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type=number] { -moz-appearance: textfield; }
+    .input-wrap { position: relative; }
+    .input-wrap .dollar { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #444; font-size: 0.85rem; pointer-events: none; font-weight: 500; }
+    .input-wrap input { padding-left: 1.4rem; }
+    .btn { padding: 0.55rem 1rem; border: none; border-radius: 10px; cursor: pointer; font-size: 0.8rem; font-weight: 600; font-family: inherit; transition: all 0.15s; }
+    .btn-add { background: #1a1a2e; color: #60a5fa; border: 1px solid #1e3a5f; }
+    .btn-add:hover { background: #1e3a5f; color: #93c5fd; }
+    .btn-remove { background: transparent; color: #555; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.1rem; border: 1px solid #1e1e1e; }
+    .btn-remove:hover { background: #2a1515; color: #f87171; border-color: #3a1c1c; }
+    .fee-grid { display: grid; grid-template-columns: 1fr 110px; gap: 0.5rem 1.25rem; align-items: center; }
+    .fee-grid label { font-size: 0.8rem; color: #777; margin: 0; text-transform: none; letter-spacing: 0; font-weight: 400; }
+    .fee-grid .input-wrap input, .fee-grid input { text-align: right; padding: 0.45rem 0.6rem; font-size: 0.85rem; }
+    .fee-grid .input-wrap input { padding-left: 1.2rem; }
+    .collapsible-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+    .collapsible-header .toggle { font-size: 0.7rem; color: #444; transition: transform 0.2s; }
+    .collapsible-header .toggle.open { transform: rotate(180deg); }
+    .collapsible-body { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; }
+    .collapsible-body.collapsed { max-height: 0; opacity: 0; }
+    .collapsible-body.expanded { max-height: 600px; opacity: 1; }
+    .results { margin-top: 0.25rem; }
+    .vehicle-result { margin-bottom: 1.25rem; }
+    .vehicle-result:last-child { margin-bottom: 0; }
+    .vehicle-result-header { font-size: 0.8rem; font-weight: 600; color: #888; margin-bottom: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #1e1e1e; }
+    .result-row { display: flex; justify-content: space-between; padding: 0.4rem 0; font-size: 0.85rem; }
+    .result-row .label { color: #555; }
+    .result-row .value { font-weight: 600; color: #ccc; font-variant-numeric: tabular-nums; }
+    .result-row.total { padding-top: 0.6rem; margin-top: 0.25rem; border-top: 1px solid #1e1e1e; }
+    .result-row.total .value { color: #4ade80; font-size: 1rem; }
+    .result-row.grand-total { padding-top: 0.75rem; margin-top: 0.5rem; border-top: 2px solid #222; }
+    .result-row.grand-total .label { color: #888; font-weight: 600; }
+    .result-row.grand-total .value { color: #4ade80; font-size: 1.1rem; font-weight: 700; }
+    .dep-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; margin-top: 0.5rem; }
+    .dep-table th, .dep-table td { padding: 0.3rem 0.5rem; text-align: left; border-bottom: 1px solid #1a1a1a; }
+    .dep-table th { color: #444; font-weight: 500; text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.05em; }
+    .dep-table td { color: #666; }
+    .dep-table tr.active td { color: #93c5fd; font-weight: 600; background: rgba(59,130,246,0.08); }
+    details { margin-top: 0.5rem; }
+    summary { font-size: 0.75rem; color: #3b82f6; cursor: pointer; font-weight: 500; }
+    summary:hover { color: #60a5fa; }
+    .note { font-size: 0.7rem; color: #333; margin-top: 1.5rem; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WA RTA Calculator</h1>
+    <p class="subtitle">Sound Transit RTA excise tax + registration fees</p>
+
+    <div class="card">
+      <h2>Vehicles</h2>
+      <div id="vehicles"></div>
+      <button class="btn btn-add" onclick="addVehicle()" style="margin-top:0.75rem">+ Add Vehicle</button>
+    </div>
+
+    <div class="card">
+      <div class="collapsible-header" onclick="toggleSection('fees')">
+        <h2 style="margin:0">Registration Fees</h2>
+        <span class="toggle" id="fees-toggle">&#9660;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="fees-body">
+        <div class="fee-grid" style="margin-top:1rem">
+          <label>Registration License - Renewal</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" id="fee-renewal" value="30" step="0.25" oninput="calculate()"></div>
+          <label>Vehicle Weight</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" id="fee-weight" value="35" step="0.25" oninput="calculate()"></div>
+          <label>Registration Filing</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" id="fee-filing" value="6" step="0.25" oninput="calculate()"></div>
+          <label>Registration Service Fee</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" id="fee-service" value="11" step="0.25" oninput="calculate()"></div>
+          <label>DOL Service</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" id="fee-dol" value="0.75" step="0.25" oninput="calculate()"></div>
+          <label>License Plate Technology</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" id="fee-plate" value="0.25" step="0.25" oninput="calculate()"></div>
+          <label>Transportation Benefit District</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" id="fee-tbd" value="40" step="1" oninput="calculate()"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="collapsible-header" onclick="toggleSection('rta')">
+        <h2 style="margin:0">RTA Settings</h2>
+        <span class="toggle" id="rta-toggle">&#9660;</span>
+      </div>
+      <div class="collapsible-body collapsed" id="rta-body">
+        <div class="fee-grid" style="margin-top:1rem">
+          <label>Excise Tax Rate (%)</label>
+          <input type="number" id="rta-rate" value="1.1" step="0.1" oninput="calculate()">
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="results-card" style="display:none">
+      <h2>Estimate</h2>
+      <div id="results" class="results"></div>
+    </div>
+
+    <p class="note">Depreciation per RCW 82.44.035 — estimate only, actual may vary by DOL records</p>
+  </div>
+
+  <script>
+    // Official DOL depreciation schedule (dol.wa.gov)
+    // Year of Service = Current Year - Model Year + 1
+    const depSchedule = [
+      { year: 1,  pct: 100, label: "1st year" },
+      { year: 2,  pct: 95,  label: "2nd year" },
+      { year: 3,  pct: 89,  label: "3rd year" },
+      { year: 4,  pct: 83,  label: "4th year" },
+      { year: 5,  pct: 74,  label: "5th year" },
+      { year: 6,  pct: 65,  label: "6th year" },
+      { year: 7,  pct: 57,  label: "7th year" },
+      { year: 8,  pct: 48,  label: "8th year" },
+      { year: 9,  pct: 40,  label: "9th year" },
+      { year: 10, pct: 31,  label: "10th year" },
+      { year: 11, pct: 22,  label: "11th year" },
+      { year: 12, pct: 14,  label: "12th year" },
+      { year: 13, pct: 10,  label: "13+ years (floor)" },
+    ];
+
+    let vehicleId = 0;
+
+    function toggleSection(id) {
+      const body = document.getElementById(id + '-body');
+      const toggle = document.getElementById(id + '-toggle');
+      body.classList.toggle('collapsed');
+      body.classList.toggle('expanded');
+      toggle.classList.toggle('open');
+    }
+
+    function addVehicle(msrp = "", year = "") {
+      vehicleId++;
+      const currentYear = new Date().getFullYear();
+      const div = document.createElement("div");
+      div.className = "vehicle-entry";
+      div.id = `vehicle-${vehicleId}`;
+      div.innerHTML = `
+        <div>
+          <label>Model Year</label>
+          <input type="number" placeholder="${currentYear}" value="${year}" min="1950" max="${currentYear + 1}" oninput="calculate()">
+        </div>
+        <div>
+          <label>MSRP</label>
+          <div class="input-wrap"><span class="dollar">$</span><input type="number" placeholder="79,900" value="${msrp}" oninput="calculate()"></div>
+        </div>
+        <div style="padding-top:1.1rem">
+          <button class="btn btn-remove" onclick="removeVehicle(${vehicleId})">&#215;</button>
+        </div>
+      `;
+      document.getElementById("vehicles").appendChild(div);
+      calculate();
+    }
+
+    function removeVehicle(id) {
+      document.getElementById(`vehicle-${id}`)?.remove();
+      calculate();
+    }
+
+    function getDepPct(yos) {
+      if (yos < 1) yos = 1;
+      if (yos >= 13) return 10;
+      const entry = depSchedule.find(d => d.year === yos);
+      return entry ? entry.pct : 10;
+    }
+
+    function fmt(n) {
+      return '$' + n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculate() {
+      const currentYear = new Date().getFullYear();
+      const rtaRate = parseFloat(document.getElementById("rta-rate").value) || 1.1;
+      const fees = {
+        renewal: parseFloat(document.getElementById("fee-renewal").value) || 0,
+        weight: parseFloat(document.getElementById("fee-weight").value) || 0,
+        filing: parseFloat(document.getElementById("fee-filing").value) || 0,
+        service: parseFloat(document.getElementById("fee-service").value) || 0,
+        dol: parseFloat(document.getElementById("fee-dol").value) || 0,
+        plate: parseFloat(document.getElementById("fee-plate").value) || 0,
+        tbd: parseFloat(document.getElementById("fee-tbd").value) || 0,
+      };
+      const baseFees = Object.values(fees).reduce((a, b) => a + b, 0);
+
+      const entries = document.querySelectorAll(".vehicle-entry");
+      const resultsDiv = document.getElementById("results");
+      const resultsCard = document.getElementById("results-card");
+      resultsDiv.innerHTML = "";
+
+      if (entries.length === 0) { resultsCard.style.display = "none"; return; }
+      resultsCard.style.display = "block";
+
+      let grandTotal = 0;
+      let count = 0;
+      entries.forEach(entry => {
+        const inputs = entry.querySelectorAll("input");
+        const year = parseInt(inputs[0].value);
+        const msrp = parseFloat(inputs[1].value);
+
+        if (!msrp || !year) return;
+        count++;
+
+        const yos = currentYear - year + 1;
+        const depPct = getDepPct(yos);
+        const depValue = msrp * (depPct / 100);
+        const rtaTax = depValue * (rtaRate / 100);
+        const total = baseFees + rtaTax;
+        grandTotal += total;
+
+        resultsDiv.innerHTML += `
+          <div class="vehicle-result">
+            <div class="vehicle-result-header">${year} &middot; ${fmt(msrp)} MSRP</div>
+            <div class="result-row"><span class="label">Year of service: ${yos} &rarr; ${depPct}% of MSRP</span><span class="value">${fmt(depValue)}</span></div>
+            <div class="result-row"><span class="label">RTA Excise Tax (${rtaRate}%)</span><span class="value">${fmt(rtaTax)}</span></div>
+            <div class="result-row"><span class="label">Registration Fees</span><span class="value">${fmt(baseFees)}</span></div>
+            <div class="result-row total"><span class="label">Total</span><span class="value">${fmt(total)}</span></div>
+            <details>
+              <summary>Depreciation schedule</summary>
+              <table class="dep-table">
+                <tr><th>Year of Service</th><th>% MSRP</th><th>Value</th><th>RTA</th></tr>
+                ${depSchedule.map(d => `
+                  <tr class="${d.year === Math.min(yos, 13) ? 'active' : ''}">
+                    <td>${d.label}</td>
+                    <td>${d.pct}%</td>
+                    <td>${fmt(msrp * d.pct / 100)}</td>
+                    <td>${fmt(msrp * d.pct / 100 * rtaRate / 100)}</td>
+                  </tr>
+                `).join("")}
+              </table>
+            </details>
+          </div>
+        `;
+      });
+
+      if (count > 1 && grandTotal > 0) {
+        resultsDiv.innerHTML += `
+          <div class="result-row grand-total">
+            <span class="label">Combined Total</span>
+            <span class="value">${fmt(grandTotal)}</span>
+          </div>
+        `;
+      }
+    }
+
+    addVehicle(79900, 2004);
+    addVehicle(65000, 1999);
+  </script>
+</body>
+</html>
