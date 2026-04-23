@@ -606,7 +606,7 @@
     }
 
     function getMakeOptions() {
-      return '<option value="">Select make</option>' + makes.map(m => `<option value="${m}">${m}</option>`).join('');
+      return '<option value="">Select make</option>' + makes.map(m => `<option value="${m}">${m}</option>`).join('') + '<option value="__other__">Other</option>';
     }
 
     function getModelOptions(make) {
@@ -631,8 +631,16 @@
       const entry = document.getElementById(`vehicle-${id}`);
       const makeSelect = entry.querySelector('.v-make');
       const modelSelect = entry.querySelector('.v-model');
-      modelSelect.innerHTML = getModelOptions(makeSelect.value);
-      modelSelect.value = '';
+      const modelWrap = modelSelect.parentElement;
+      if (makeSelect.value === '__other__') {
+        modelWrap.style.display = 'none';
+        modelSelect.value = '';
+        entry.querySelector('.msrp-hint').style.display = 'none';
+      } else {
+        modelWrap.style.display = '';
+        modelSelect.innerHTML = getModelOptions(makeSelect.value);
+        modelSelect.value = '';
+      }
       tryLookup(id);
     }
 
